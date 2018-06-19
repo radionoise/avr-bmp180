@@ -1,6 +1,6 @@
 #include <util/delay.h>
 #include "bmp180.h"
-#include "i2c.h" // https://github.com/radionoise/avr-i2c
+#include "i2c.h"
 
 Bmp180CalibrationData *bmp180ReadCalibrationData() {
     Bmp180CalibrationData *data = malloc(sizeof(Bmp180CalibrationData));
