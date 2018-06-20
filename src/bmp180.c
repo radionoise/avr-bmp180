@@ -330,3 +330,7 @@ Bmp180Data *bmp180ReadData(uint8_t oss, Bmp180CalibrationData *calibrationData) 
 float bmp180ConvertPressurePaToMmHg(long pressurePa) {
     return (float) (pressurePa * 0.00750062);
 }
+
+int bmp180CalculateAltitudeMeters(long pressurePa) {
+    return 44330 * (1 - pow((double) pressurePa / 101325, 1/5.255));
+}
