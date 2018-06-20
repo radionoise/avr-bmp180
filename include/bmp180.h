@@ -36,6 +36,6 @@ typedef struct Bmp180Data {
 
 Bmp180CalibrationData *bmp180ReadCalibrationData();
 Bmp180Data *bmp180ReadData(uint8_t oss, Bmp180CalibrationData *calibrationData);
-int bmp180ConvertPressurePaToMmHg(long pressurePa);
+float bmp180ConvertPressurePaToMmHg(long pressurePa);
 
 #endif //WEATHER_STATION_BMP180_H

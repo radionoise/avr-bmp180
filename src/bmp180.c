@@ -327,6 +327,6 @@ Bmp180Data *bmp180ReadData(uint8_t oss, Bmp180CalibrationData *calibrationData) 
     return data;
 }
 
-int bmp180ConvertPressurePaToMmHg(long pressurePa) {
-    return (int) (pressurePa * 0.00750062);
+float bmp180ConvertPressurePaToMmHg(long pressurePa) {
+    return (float) (pressurePa * 0.00750062);
 }
