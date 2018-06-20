@@ -267,7 +267,7 @@ uint32_t bmp180ReadUncompensatedPressure(uint8_t oss) {
     i2cStop();
 
     uint32_t result = 0;
-    result |= (msb << 8) | lsb;
+    result |= ((uint16_t) msb << 8) | lsb;
     result <<= 8;
     result |= xlsb;
 
