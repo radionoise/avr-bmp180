@@ -2,26 +2,24 @@
 #include "bmp180.h"
 #include "i2c.h"
 
-Bmp180CalibrationData *bmp180ReadCalibrationData() {
-    Bmp180CalibrationData *data = malloc(sizeof(Bmp180CalibrationData));
-
+uint8_t bmp180ReadCalibrationData(Bmp180CalibrationData *data) {
     i2cInit();
     i2cStart();
+
     if (i2cGetStatus() != I2C_STATUS_START_TRANSMITTED) {
-        free(data);
-        return NULL;
+        return BMP180_ERROR_I2C;
     }
 
     i2cSendSlaveAddress(BMP180_ADDRESS, I2C_WRITE);
     if (i2cGetStatus() != I2C_STATUS_ADDRESS_WRITE_ACK_RECEIVED) {
         free(data);
-        return NULL;
+        return BMP180_ERROR_I2C;
     }
 
     i2cSendData(0xAA);
     if (i2cGetStatus() != I2C_STATUS_DATA_WRITE_ACK_RECEIVED) {
         free(data);
-        return NULL;
+        return BMP180_ERROR_I2C;
     }
 
     i2cStop();
@@ -29,13 +27,13 @@ Bmp180CalibrationData *bmp180ReadCalibrationData() {
     i2cStart();
     if (i2cGetStatus() != I2C_STATUS_START_TRANSMITTED) {
         free(data);
-        return NULL;
+        return BMP180_ERROR_I2C;
     }
 
     i2cSendSlaveAddress(BMP180_ADDRESS, I2C_READ);
     if (i2cGetStatus() != I2C_STATUS_ADDRESS_READ_ACK_SENT) {
         free(data);
-        return NULL;
+        return BMP180_ERROR_I2C;
     }
 
     for (int reg = 0xAA; reg <= 0xBE; reg += 2) {
@@ -43,7 +41,7 @@ Bmp180CalibrationData *bmp180ReadCalibrationData() {
         uint8_t msb = i2cReadDataAck();
         if (i2cGetStatus() != I2C_STATUS_DATA_READ_ACK_SENT) {
             free(data);
-            return NULL;
+            return BMP180_ERROR_I2C;
         }
 
         uint8_t lsb;
@@ -51,13 +49,13 @@ Bmp180CalibrationData *bmp180ReadCalibrationData() {
             lsb = i2cReadDataNotAck();
             if (i2cGetStatus() != I2C_STATUS_DATA_READ_ACK_NOT_SENT) {
                 free(data);
-                return NULL;
+                return BMP180_ERROR_I2C;
             }
         } else {
             lsb = i2cReadDataAck();
             if (i2cGetStatus() != I2C_STATUS_DATA_READ_ACK_SENT) {
                 free(data);
-                return NULL;
+                return BMP180_ERROR_I2C;
             }
         }
 
@@ -102,29 +100,30 @@ Bmp180CalibrationData *bmp180ReadCalibrationData() {
 
     i2cStop();
 
-    return data;
+    return BMP180_OK;
 }
 
-uint16_t bmp180ReadUncompensatedTemperature() {
+uint8_t bmp180ReadUncompensatedTemperature(uint16_t *temperature) {
     i2cInit();
     i2cStart();
+
     if (i2cGetStatus() != I2C_STATUS_START_TRANSMITTED) {
-        return BMP180_ERROR_RESULT;
+        return BMP180_ERROR_I2C;
     }
 
     i2cSendSlaveAddress(BMP180_ADDRESS, I2C_WRITE);
     if (i2cGetStatus() != I2C_STATUS_ADDRESS_WRITE_ACK_RECEIVED) {
-        return BMP180_ERROR_RESULT;
+        return BMP180_ERROR_I2C;
     }
 
     i2cSendData(0xF4);
     if (i2cGetStatus() != I2C_STATUS_DATA_WRITE_ACK_RECEIVED) {
-        return BMP180_ERROR_RESULT;
+        return BMP180_ERROR_I2C;
     }
 
     i2cSendData(0x2E);
     if (i2cGetStatus() != I2C_STATUS_DATA_WRITE_ACK_RECEIVED) {
-        return BMP180_ERROR_RESULT;
+        return BMP180_ERROR_I2C;
     }
 
     i2cStop();
@@ -132,38 +131,38 @@ uint16_t bmp180ReadUncompensatedTemperature() {
 
     i2cStart();
     if (i2cGetStatus() != I2C_STATUS_START_TRANSMITTED) {
-        return BMP180_ERROR_RESULT;
+        return BMP180_ERROR_I2C;
     }
 
     i2cSendSlaveAddress(BMP180_ADDRESS, I2C_WRITE);
     if (i2cGetStatus() != I2C_STATUS_ADDRESS_WRITE_ACK_RECEIVED) {
-        return BMP180_ERROR_RESULT;
+        return BMP180_ERROR_I2C;
     }
 
     i2cSendData(0xF6);
     if (i2cGetStatus() != I2C_STATUS_DATA_WRITE_ACK_RECEIVED) {
-        return BMP180_ERROR_RESULT;
+        return BMP180_ERROR_I2C;
     }
 
     i2cStop();
     i2cStart();
     if (i2cGetStatus() != I2C_STATUS_START_TRANSMITTED) {
-        return BMP180_ERROR_RESULT;
+        return BMP180_ERROR_I2C;
     }
 
     i2cSendSlaveAddress(BMP180_ADDRESS, I2C_READ);
     if (i2cGetStatus() != I2C_STATUS_ADDRESS_READ_ACK_SENT) {
-        return BMP180_ERROR_RESULT;
+        return BMP180_ERROR_I2C;
     }
 
     uint8_t msb = i2cReadDataAck();
     if (i2cGetStatus() != I2C_STATUS_DATA_READ_ACK_SENT) {
-        return BMP180_ERROR_RESULT;
+        return BMP180_ERROR_I2C;
     }
 
     uint8_t lsb = i2cReadDataNotAck();
     if (i2cGetStatus() != I2C_STATUS_DATA_READ_ACK_NOT_SENT) {
-        return BMP180_ERROR_RESULT;
+        return BMP180_ERROR_I2C;
     }
 
     i2cStop();
@@ -171,7 +170,9 @@ uint16_t bmp180ReadUncompensatedTemperature() {
     uint16_t result = 0;
     result |= (msb << 8) | lsb;
 
-    return result;
+    *temperature = result;
+
+    return BMP180_OK;
 }
 
 float bmp180CalculateTemperature(uint16_t uncompensatedTemperature, int32_t *b5, Bmp180CalibrationData *calibrationData) {
@@ -184,26 +185,26 @@ float bmp180CalculateTemperature(uint16_t uncompensatedTemperature, int32_t *b5,
     return temperature;
 }
 
-uint32_t bmp180ReadUncompensatedPressure(uint8_t oss) {
+uint8_t bmp180ReadUncompensatedPressure(uint8_t oss, uint32_t *pressure) {
     i2cInit();
     i2cStart();
     if (i2cGetStatus() != I2C_STATUS_START_TRANSMITTED) {
-        return BMP180_ERROR_RESULT;
+        return BMP180_ERROR_I2C;
     }
 
     i2cSendSlaveAddress(BMP180_ADDRESS, I2C_WRITE);
     if (i2cGetStatus() != I2C_STATUS_ADDRESS_WRITE_ACK_RECEIVED) {
-        return BMP180_ERROR_RESULT;
+        return BMP180_ERROR_I2C;
     }
 
     i2cSendData(0xF4);
     if (i2cGetStatus() != I2C_STATUS_DATA_WRITE_ACK_RECEIVED) {
-        return BMP180_ERROR_RESULT;
+        return BMP180_ERROR_I2C;
     }
 
     i2cSendData(0x34 | (oss << 6));
     if (i2cGetStatus() != I2C_STATUS_DATA_WRITE_ACK_RECEIVED) {
-        return BMP180_ERROR_RESULT;
+        return BMP180_ERROR_I2C;
     }
 
     i2cStop();
@@ -225,43 +226,43 @@ uint32_t bmp180ReadUncompensatedPressure(uint8_t oss) {
 
     i2cStart();
     if (i2cGetStatus() != I2C_STATUS_START_TRANSMITTED) {
-        return BMP180_ERROR_RESULT;
+        return BMP180_ERROR_I2C;
     }
 
     i2cSendSlaveAddress(BMP180_ADDRESS, I2C_WRITE);
     if (i2cGetStatus() != I2C_STATUS_ADDRESS_WRITE_ACK_RECEIVED) {
-        return BMP180_ERROR_RESULT;
+        return BMP180_ERROR_I2C;
     }
 
     i2cSendData(0xF6);
     if (i2cGetStatus() != I2C_STATUS_DATA_WRITE_ACK_RECEIVED) {
-        return BMP180_ERROR_RESULT;
+        return BMP180_ERROR_I2C;
     }
 
     i2cStop();
     i2cStart();
     if (i2cGetStatus() != I2C_STATUS_START_TRANSMITTED) {
-        return BMP180_ERROR_RESULT;
+        return BMP180_ERROR_I2C;
     }
 
     i2cSendSlaveAddress(BMP180_ADDRESS, I2C_READ);
     if (i2cGetStatus() != I2C_STATUS_ADDRESS_READ_ACK_SENT) {
-        return BMP180_ERROR_RESULT;
+        return BMP180_ERROR_I2C;
     }
 
     uint8_t msb = i2cReadDataAck();
     if (i2cGetStatus() != I2C_STATUS_DATA_READ_ACK_SENT) {
-        return BMP180_ERROR_RESULT;
+        return BMP180_ERROR_I2C;
     }
 
     uint8_t lsb = i2cReadDataAck();
     if (i2cGetStatus() != I2C_STATUS_DATA_READ_ACK_SENT) {
-        return BMP180_ERROR_RESULT;
+        return BMP180_ERROR_I2C;
     }
 
     uint8_t xlsb = i2cReadDataNotAck();
     if (i2cGetStatus() != I2C_STATUS_DATA_READ_ACK_NOT_SENT) {
-        return BMP180_ERROR_RESULT;
+        return BMP180_ERROR_I2C;
     }
 
     i2cStop();
@@ -272,8 +273,9 @@ uint32_t bmp180ReadUncompensatedPressure(uint8_t oss) {
     result |= xlsb;
 
     result >>= (8 - oss);
+    *pressure = result;
 
-    return result;
+    return BMP180_OK;
 }
 
 long bmp180CalculatePressure(uint32_t uncompensatedPressure, int32_t *b5, uint8_t oss, Bmp180CalibrationData *calibrationData) {
@@ -303,28 +305,27 @@ long bmp180CalculatePressure(uint32_t uncompensatedPressure, int32_t *b5, uint8_
     return p;
 }
 
-Bmp180Data *bmp180ReadData(uint8_t oss, Bmp180CalibrationData *calibrationData) {
-    uint16_t ut = bmp180ReadUncompensatedTemperature();
-    uint32_t up = bmp180ReadUncompensatedPressure(oss);
+uint8_t bmp180ReadData(uint8_t oss, Bmp180Data *data, Bmp180CalibrationData *calibrationData) {
+    uint16_t ut;
+    uint8_t result = bmp180ReadUncompensatedTemperature(&ut);
 
-    Bmp180Data *data = malloc(sizeof(Bmp180Data));
+    if (result != BMP180_OK) {
+        return BMP180_ERROR_UT;
+    }
+
+    uint32_t up;
+    result = bmp180ReadUncompensatedPressure(oss, &up);
+
+    if (result != BMP180_OK) {
+        return BMP180_ERROR_UP;
+    }
+
     int32_t b5 = 0;
 
-    if (ut != BMP180_ERROR_RESULT && ut != 0) {
-        float temperature = bmp180CalculateTemperature(ut, &b5, calibrationData);
-        data->temperatureC = temperature;
-    } else {
-        data->temperatureC = BMP180_ERROR_RESULT;
-    }
+    data->temperatureC = bmp180CalculateTemperature(ut, &b5, calibrationData);
+    data->pressurePa = bmp180CalculatePressure(up, &b5, oss, calibrationData);
 
-    if (up != BMP180_ERROR_RESULT && up != 0 && ut != 0) {
-        long pressure = bmp180CalculatePressure(up, &b5, oss, calibrationData);
-        data->pressurePa = pressure;
-    } else {
-        data->pressurePa = BMP180_ERROR_RESULT;
-    }
-
-    return data;
+    return BMP180_OK;
 }
 
 float bmp180ConvertPressurePaToMmHg(long pressurePa) {
