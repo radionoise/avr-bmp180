@@ -7,55 +7,48 @@ uint8_t bmp180ReadCalibrationData(Bmp180CalibrationData *data) {
     i2cStart();
 
     if (i2cGetStatus() != I2C_STATUS_START_TRANSMITTED) {
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     i2cSendSlaveAddress(BMP180_ADDRESS, I2C_WRITE);
     if (i2cGetStatus() != I2C_STATUS_ADDRESS_WRITE_ACK_RECEIVED) {
-        free(data);
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     i2cSendData(0xAA);
     if (i2cGetStatus() != I2C_STATUS_DATA_WRITE_ACK_RECEIVED) {
-        free(data);
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     i2cStop();
 
     i2cStart();
     if (i2cGetStatus() != I2C_STATUS_START_TRANSMITTED) {
-        free(data);
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     i2cSendSlaveAddress(BMP180_ADDRESS, I2C_READ);
     if (i2cGetStatus() != I2C_STATUS_ADDRESS_READ_ACK_SENT) {
-        free(data);
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     for (int reg = 0xAA; reg <= 0xBE; reg += 2) {
         uint16_t bits = 0;
         uint8_t msb = i2cReadDataAck();
         if (i2cGetStatus() != I2C_STATUS_DATA_READ_ACK_SENT) {
-            free(data);
-            return BMP180_ERROR_I2C;
+            return i2cGetStatus();
         }
 
         uint8_t lsb;
         if (reg == 0xBE) {
             lsb = i2cReadDataNotAck();
             if (i2cGetStatus() != I2C_STATUS_DATA_READ_ACK_NOT_SENT) {
-                free(data);
-                return BMP180_ERROR_I2C;
+                return i2cGetStatus();
             }
         } else {
             lsb = i2cReadDataAck();
             if (i2cGetStatus() != I2C_STATUS_DATA_READ_ACK_SENT) {
-                free(data);
-                return BMP180_ERROR_I2C;
+                return i2cGetStatus();
             }
         }
 
@@ -108,22 +101,22 @@ uint8_t bmp180ReadUncompensatedTemperature(uint16_t *temperature) {
     i2cStart();
 
     if (i2cGetStatus() != I2C_STATUS_START_TRANSMITTED) {
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     i2cSendSlaveAddress(BMP180_ADDRESS, I2C_WRITE);
     if (i2cGetStatus() != I2C_STATUS_ADDRESS_WRITE_ACK_RECEIVED) {
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     i2cSendData(0xF4);
     if (i2cGetStatus() != I2C_STATUS_DATA_WRITE_ACK_RECEIVED) {
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     i2cSendData(0x2E);
     if (i2cGetStatus() != I2C_STATUS_DATA_WRITE_ACK_RECEIVED) {
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     i2cStop();
@@ -131,38 +124,38 @@ uint8_t bmp180ReadUncompensatedTemperature(uint16_t *temperature) {
 
     i2cStart();
     if (i2cGetStatus() != I2C_STATUS_START_TRANSMITTED) {
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     i2cSendSlaveAddress(BMP180_ADDRESS, I2C_WRITE);
     if (i2cGetStatus() != I2C_STATUS_ADDRESS_WRITE_ACK_RECEIVED) {
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     i2cSendData(0xF6);
     if (i2cGetStatus() != I2C_STATUS_DATA_WRITE_ACK_RECEIVED) {
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     i2cStop();
     i2cStart();
     if (i2cGetStatus() != I2C_STATUS_START_TRANSMITTED) {
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     i2cSendSlaveAddress(BMP180_ADDRESS, I2C_READ);
     if (i2cGetStatus() != I2C_STATUS_ADDRESS_READ_ACK_SENT) {
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     uint8_t msb = i2cReadDataAck();
     if (i2cGetStatus() != I2C_STATUS_DATA_READ_ACK_SENT) {
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     uint8_t lsb = i2cReadDataNotAck();
     if (i2cGetStatus() != I2C_STATUS_DATA_READ_ACK_NOT_SENT) {
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     i2cStop();
@@ -189,22 +182,22 @@ uint8_t bmp180ReadUncompensatedPressure(uint8_t oss, uint32_t *pressure) {
     i2cInit();
     i2cStart();
     if (i2cGetStatus() != I2C_STATUS_START_TRANSMITTED) {
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     i2cSendSlaveAddress(BMP180_ADDRESS, I2C_WRITE);
     if (i2cGetStatus() != I2C_STATUS_ADDRESS_WRITE_ACK_RECEIVED) {
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     i2cSendData(0xF4);
     if (i2cGetStatus() != I2C_STATUS_DATA_WRITE_ACK_RECEIVED) {
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     i2cSendData(0x34 | (oss << 6));
     if (i2cGetStatus() != I2C_STATUS_DATA_WRITE_ACK_RECEIVED) {
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     i2cStop();
@@ -226,43 +219,43 @@ uint8_t bmp180ReadUncompensatedPressure(uint8_t oss, uint32_t *pressure) {
 
     i2cStart();
     if (i2cGetStatus() != I2C_STATUS_START_TRANSMITTED) {
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     i2cSendSlaveAddress(BMP180_ADDRESS, I2C_WRITE);
     if (i2cGetStatus() != I2C_STATUS_ADDRESS_WRITE_ACK_RECEIVED) {
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     i2cSendData(0xF6);
     if (i2cGetStatus() != I2C_STATUS_DATA_WRITE_ACK_RECEIVED) {
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     i2cStop();
     i2cStart();
     if (i2cGetStatus() != I2C_STATUS_START_TRANSMITTED) {
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     i2cSendSlaveAddress(BMP180_ADDRESS, I2C_READ);
     if (i2cGetStatus() != I2C_STATUS_ADDRESS_READ_ACK_SENT) {
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     uint8_t msb = i2cReadDataAck();
     if (i2cGetStatus() != I2C_STATUS_DATA_READ_ACK_SENT) {
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     uint8_t lsb = i2cReadDataAck();
     if (i2cGetStatus() != I2C_STATUS_DATA_READ_ACK_SENT) {
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     uint8_t xlsb = i2cReadDataNotAck();
     if (i2cGetStatus() != I2C_STATUS_DATA_READ_ACK_NOT_SENT) {
-        return BMP180_ERROR_I2C;
+        return i2cGetStatus();
     }
 
     i2cStop();

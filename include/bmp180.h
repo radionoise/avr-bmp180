@@ -13,9 +13,8 @@
 #endif
 
 #define BMP180_OK 0
-#define BMP180_ERROR_I2C 1
-#define BMP180_ERROR_UT 2
-#define BMP180_ERROR_UP 3
+#define BMP180_ERROR_UT 1
+#define BMP180_ERROR_UP 2
 
 #define BMP180_OSS_ULTRA_LOW_POWER 0
 #define BMP180_OSS_STANDARD 1
