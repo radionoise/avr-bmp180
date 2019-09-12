@@ -1,9 +1,10 @@
 /*
  * BMP180 temperature and pressure sensor library for AVR.
+ * Version 1.0.0
  */
 
-#ifndef WEATHER_STATION_BMP180_H
-#define WEATHER_STATION_BMP180_H
+#ifndef BMP180_BMP180_H
+#define BMP180_BMP180_H
 
 #include <stdint-gcc.h>
 #include <stdlib.h>
@@ -45,4 +46,4 @@ uint8_t bmp180ReadData(uint8_t oss, Bmp180Data *data, Bmp180CalibrationData *cal
 float bmp180ConvertPressurePaToMmHg(long pressurePa);
 int bmp180CalculateAltitudeMeters(long pressurePa);
 
-#endif //WEATHER_STATION_BMP180_H
+#endif //BMP180_BMP180_H
