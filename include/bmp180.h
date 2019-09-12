@@ -41,9 +41,24 @@ typedef struct Bmp180Data {
     long pressurePa;
 } Bmp180Data;
 
+/*
+ * Reads sensor's calibration data. This need to be done once.
+ */
 uint8_t bmp180ReadCalibrationData(Bmp180CalibrationData *data);
+
+/*
+ * Reads sensor data (temperature and pressure).
+ */
 uint8_t bmp180ReadData(uint8_t oss, Bmp180Data *data, Bmp180CalibrationData *calibrationData);
+
+/*
+ * Converts Pa pressure to mmHg.
+ */
 float bmp180ConvertPressurePaToMmHg(long pressurePa);
+
+/*
+ * Calculates altitude based on pressure in Pa.
+ */
 int bmp180CalculateAltitudeMeters(long pressurePa);
 
 #endif //BMP180_BMP180_H
